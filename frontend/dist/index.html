@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoReviewer - AI Paper Quality Assessment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+        
+        .upload-section {
+            text-align: center;
+            padding: 40px;
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+        
+        .upload-section.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .upload-section h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .upload-section p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result-section {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .result-section.active {
+            display: block;
+        }
+        
+        .score-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .score-value {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .recommendation {
+            display: inline-block;
+            padding: 10px 30px;
+            border-radius: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .recommendation.accept {
+            background: #10b981;
+        }
+        
+        .recommendation.revise {
+            background: #f59e0b;
+        }
+        
+        .recommendation.reject {
+            background: #ef4444;
+        }
+        
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .score-item {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .score-item h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+        
+        .score-item .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .issues-section {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .issues-section h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+        
+        .issue-item {
+            padding: 10px;
+            background: white;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            color: #856404;
+        }
+        
+        .no-issues {
+            background: #d1f2eb;
+            border-left: 4px solid #10b981;
+            padding: 20px;
+            border-radius: 10px;
+            color: #0c5e4a;
+        }
+        
+        .metadata {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .metadata h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .metadata-item {
+            text-align: center;
+        }
+        
+        .metadata-item.clickable {
+            transition: all 0.3s;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .metadata-item.clickable:hover {
+            background: #e8ebff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+        }
+        
+        .metadata-item .label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .metadata-item .value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .metadata-item .click-hint {
+            font-size: 0.75em;
+            color: #667eea;
+            margin-top: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .metadata-item.clickable:hover .click-hint {
+            opacity: 1;
+        }
+        
+        .new-review-btn {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .agent-details {
+            margin-top: 30px;
+        }
+        
+        .agent-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        .agent-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+        
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .agent-name {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+        
+        .expand-icon {
+            font-size: 1.2em;
+            color: #667eea;
+            transition: transform 0.3s;
+        }
+        
+        .agent-content {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .agent-review-content {
+            color: #444;
+            line-height: 1.8;
+        }
+        
+        .agent-review-content h4 {
+            color: #667eea;
+            margin: 15px 0 10px 0;
+            font-size: 1em;
+        }
+        
+        .agent-review-content p {
+            margin: 10px 0;
+        }
+        
+        .agent-review-content ul {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        
+        .agent-review-content li {
+            margin: 5px 0;
+            line-height: 1.6;
+        }
+        
+        .agent-review-content strong {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .agent-score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .agent-issues {
+            margin-top: 10px;
+        }
+        
+        .agent-issue {
+            padding: 8px;
+            background: #fef3c7;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: block;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0);
+            transition: background-color 0.3s;
+            overflow-y: auto;
+        }
+        
+        .modal.show {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: translateY(-50px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .modal-header {
+            padding: 25px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        
+        .modal-close {
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        
+        .modal-close:hover {
+            opacity: 1;
+        }
+        
+        .modal-body {
+            padding: 30px;
+            max-height: 60vh;
+            overflow-y: auto;
+            color: #333;
+            line-height: 1.8;
+        }
+        
+        .modal-body p {
+            margin: 15px 0;
+        }
+        
+        .modal-body h4 {
+            color: #667eea;
+            margin: 20px 0 10px 0;
+            font-size: 1.1em;
+        }
+        
+        .sections-list {
+            margin: 20px 0;
+        }
+        
+        .section-item {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section-item h4 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        
+        .section-item p {
+            color: #555;
+            margin: 10px 0 0 0;
+        }
+        
+        .references-list {
+            padding-left: 25px;
+            margin: 20px 0;
+        }
+        
+        .references-list li {
+            margin: 10px 0;
+            line-height: 1.6;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AutoReviewer</h1>
+            <p>AI-Powered Scientific Paper Quality Assessment</p>
+            <p id="backendIndicator" style="font-size: 0.9em; opacity: 0.8; margin-top: 10px;">
+                Detecting backend...
+            </p>
+        </div>
+        
+        <div class="main-card">
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-icon">📄</div>
+                <h2>Upload Research Paper</h2>
+                <p>Drag and drop your PDF here or click to browse</p>
+                <input type="file" id="fileInput" class="file-input" accept=".pdf">
+                <button class="btn" onclick="document.getElementById('fileInput').click()">
+                    Choose PDF File
+                </button>
+            </div>
+            
+            <div class="loading" id="loadingSection">
+                <div class="spinner"></div>
+                <h2>Analyzing Paper...</h2>
+                <p>Our AI agents are reviewing your paper. This may take a few moments.</p>
+            </div>
+            
+            <div class="result-section" id="resultSection">
+                <div class="score-card">
+                    <h2>Overall Quality Score</h2>
+                    <div class="score-value" id="overallScore">-</div>
+                    <div class="recommendation" id="recommendation">-</div>
+                </div>
+                
+                <h2 style="margin-bottom: 20px; color: #333;">Detailed Scores</h2>
+                <div class="scores-grid" id="scoresGrid"></div>
+                
+                <div id="issuesContainer"></div>
+                
+                <div class="metadata">
+                    <h3>Paper Metadata</h3>
+                    <div class="metadata-grid" id="metadataGrid"></div>
+                </div>
+                
+                <div class="agent-details">
+                    <h2 style="margin-bottom: 20px; color: #333;">Agent Analysis Details</h2>
+                    <div id="agentDetailsContainer"></div>
+                </div>
+                
+                <div class="new-review-btn">
+                    <button class="btn" onclick="resetForm()">Review Another Paper</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
