@@ -13,12 +13,6 @@ An intelligent multi-agent system for automated scientific paper review using Cr
 - Section-aware analysis
 - ~3 minutes per paper
 
-**2. Original Backend (Fast)**
-- Rule-based algorithms
-- Mathematical analysis (TF-IDF, Shannon Entropy)
-- Quick preliminary assessment
-- ~5 seconds per paper
-
 ### Analysis Capabilities
 
 - ✅ **Plagiarism Detection** - TF-IDF similarity analysis
@@ -49,7 +43,7 @@ An intelligent multi-agent system for automated scientific paper review using Cr
 
 1. **Clone the repository**
 ```bash
-git clone <your-repo-url>
+git clone [<your-repo-url>](https://github.com/kartik1pandey/AutoReviewer)
 cd AutoReviewer
 ```
 
@@ -67,11 +61,6 @@ source venv/bin/activate
 3. **Install dependencies**
 
 For CrewAI backend:
-```bash
-pip install -r requirements-crewai.txt
-```
-
-For original backend:
 ```bash
 pip install -r requirements.txt
 ```
@@ -94,12 +83,6 @@ python api_server.py
 ```
 Then open: http://localhost:5001
 
-**Option 2: Original Backend**
-```bash
-cd backend
-python app.py
-```
-Then open: http://localhost:5000
 
 ## 📖 Usage
 
@@ -144,18 +127,6 @@ crewai_backend/
 └── utils.py               # Utility functions
 ```
 
-### Original Backend
-
-```
-backend/
-├── app.py                 # Flask API server
-├── core/
-│   ├── agents/            # 7 agent implementations
-│   ├── models.py          # Data models
-│   └── reviewer_system.py # Main orchestration
-├── uploads/               # Uploaded PDFs
-└── results/               # Review results
-```
 
 ### Frontend
 
@@ -271,11 +242,6 @@ Expected output:
 - Crash Rate: 0%
 - Fallback Rate: ~2%
 
-### Original Backend
-- Success Rate: 95%
-- Average Time: 5 seconds
-- Crash Rate: 0%
-- Offline Capable: Yes
 
 ## 🐛 Troubleshooting
 
@@ -337,8 +303,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 👤 Author
 
 **Your Name**
-- GitHub: [@YOUR_USERNAME](https://github.com/YOUR_USERNAME)
-- Repository: [AutoReviewer](https://github.com/YOUR_USERNAME/AutoReviewer)
+- GitHub: [@YOUR_USERNAME](https://github.com/kartik1pandey)
+- Repository: [AutoReviewer](https://github.com/kartik1pandey/AutoReviewer)
 
 ## 🙏 Acknowledgments
 
@@ -351,7 +317,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 📞 Support
 
 For issues and questions:
-- Open an issue: [GitHub Issues](https://github.com/YOUR_USERNAME/AutoReviewer/issues)
+- Open an issue: [GitHub Issues](https://github.com/kartik1pandey/AutoReviewer/issues)
 - Check documentation files in the repository
 - Review troubleshooting section above
 - Read START_HERE.md for quick start guide
