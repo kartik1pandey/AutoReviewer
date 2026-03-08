@@ -142,8 +142,12 @@ async function uploadPaper(file) {
     formData.append('file', file);
     
     try {
-        // Use correct endpoint based on backend
-        const endpoint = API_URL.includes('5001') ? '/api/review' : '/api/review/upload';
+        // CrewAI backend uses /api/review, original backend uses /api/review/upload
+        // Check if using production backend or CrewAI backend (port 5001)
+        const isCrewAI = API_URL.includes('5001') || API_URL.includes('render.com') || API_URL.includes('onrender.com');
+        const endpoint = isCrewAI ? '/api/review' : '/api/review/upload';
+        
+        console.log(`Uploading to: ${API_URL}${endpoint}`);
         
         const response = await fetch(`${API_URL}${endpoint}`, {
             method: 'POST',
