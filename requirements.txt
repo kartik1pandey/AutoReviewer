@@ -3,7 +3,7 @@ flask-cors==4.0.0
 PyPDF2==3.0.1
 Werkzeug==3.0.1
 # CrewAI and LLM dependencies
-crewai==1.10.1
+crewai>=0.28.0
 crewai-tools>=0.1.0
 langchain>=0.1.0
 langchain-groq>=0.1.0
