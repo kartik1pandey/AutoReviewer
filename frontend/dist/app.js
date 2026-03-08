@@ -1,22 +1,41 @@
 // AutoReviewer Frontend - Backend Integration
 // Automatically detect which backend is available
 
-// Use environment variable for API URL in production, fallback to localhost in development
-const PRODUCTION_API_URL = window.ENV_API_URL || '';  // Set by build process
-let API_URL = PRODUCTION_API_URL || 'http://localhost:5000';  // Default to original backend
+// Production backend URL - loaded from config.js
+let API_URL = typeof PRODUCTION_BACKEND_URL !== 'undefined' && PRODUCTION_BACKEND_URL 
+    ? PRODUCTION_BACKEND_URL 
+    : 'http://localhost:5000';  // Fallback to localhost for development
+
 let currentReport = null;  // Store full report for detail views
 
 // Try to detect which backend is running
 async function detectBackend() {
     const indicator = document.getElementById('backendIndicator');
     
-    // If production API URL is set, use it directly
-    if (PRODUCTION_API_URL) {
-        console.log('Using Production API:', PRODUCTION_API_URL);
+    // If production backend URL is set, use it directly
+    if (typeof PRODUCTION_BACKEND_URL !== 'undefined' && PRODUCTION_BACKEND_URL && PRODUCTION_BACKEND_URL !== '') {
+        API_URL = PRODUCTION_BACKEND_URL;
+        console.log('Using Production API:', PRODUCTION_BACKEND_URL);
         indicator.textContent = '🤖 Using Production Backend';
         indicator.style.color = '#10b981';
+        
+        // Verify backend is accessible
+        try {
+            const response = await fetch(`${API_URL}/api/status`);
+            if (response.ok) {
+                console.log('✅ Backend is accessible');
+                return;
+            }
+        } catch (e) {
+            console.warn('⚠️ Backend may be sleeping (Render free tier). First request will wake it up.');
+            indicator.textContent = '⏳ Backend waking up (Render free tier)...';
+            indicator.style.color = '#f59e0b';
+        }
         return;
     }
+    
+    // Development mode - try localhost backends
+    console.log('Development mode - checking localhost backends...');
     
     // Try CrewAI backend first (localhost)
     try {
