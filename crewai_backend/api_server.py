@@ -181,5 +181,8 @@ if __name__ == '__main__':
     print("  • http://localhost:5001/api/health")
     print("\n" + "="*70)
     
+    # Get port from environment variable (for deployment) or use 5001
+    port = int(os.getenv('PORT', 5001))
+    
     # Run server
-    app.run(host='0.0.0.0', port=5001, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=False)

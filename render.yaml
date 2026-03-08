@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: autoreviewer-backend
+    env: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: pip install -r requirements-crewai.txt
+    startCommand: cd crewai_backend && gunicorn api_server:app
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.1-8b-instant
+      - key: PYTHON_VERSION
+        value: 3.9.0

@@ -124,3 +124,9 @@ crewai_backend/SUCCESS_SUMMARY.md
 !frontend/dist/*.html
 !frontend/dist/*.js
 !frontend/dist/*.css
+
+# Deployment Configuration Files (INCLUDE)
+!vercel.json
+!render.yaml
+!Procfile
+!runtime.txt

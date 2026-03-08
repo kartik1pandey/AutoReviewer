@@ -1,14 +1,24 @@
 // AutoReviewer Frontend - Backend Integration
 // Automatically detect which backend is available
 
-let API_URL = 'http://localhost:5000';  // Default to original backend
+// Use environment variable for API URL in production, fallback to localhost in development
+const PRODUCTION_API_URL = window.ENV_API_URL || '';  // Set by build process
+let API_URL = PRODUCTION_API_URL || 'http://localhost:5000';  // Default to original backend
 let currentReport = null;  // Store full report for detail views
 
 // Try to detect which backend is running
 async function detectBackend() {
     const indicator = document.getElementById('backendIndicator');
     
-    // Try CrewAI backend first
+    // If production API URL is set, use it directly
+    if (PRODUCTION_API_URL) {
+        console.log('Using Production API:', PRODUCTION_API_URL);
+        indicator.textContent = '🤖 Using Production Backend';
+        indicator.style.color = '#10b981';
+        return;
+    }
+    
+    // Try CrewAI backend first (localhost)
     try {
         const response = await fetch('http://localhost:5001/api/status');
         if (response.ok) {
